@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 1.0.0 (unreleased)
 
 First release of the `nitra/hydra` fork of `svrakitin/terraform-provider-hydra`.
 

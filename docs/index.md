@@ -31,7 +31,7 @@ terraform {
   required_providers {
     hydra = {
       source  = "nitra/hydra"
-      version = "~> 0.1"
+      version = "~> 1.0"
     }
   }
 }

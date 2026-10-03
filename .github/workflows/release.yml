@@ -1,6 +1,6 @@
 # Publishes GitHub Release assets (cross-platform zips + SHA256SUMS, GPG-signed,
 # plus the registry manifest declaring protocol 6.0) for any tag matching "v*"
-# (e.g. v0.1.0), for registry.opentofu.org.
+# (e.g. v1.0.0), for registry.opentofu.org.
 #
 # Requires repo secrets GPG_PRIVATE_KEY and PASSPHRASE for the "nitra" provider
 # signing key (public key registered at registry.opentofu.org).

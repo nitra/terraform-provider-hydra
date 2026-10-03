@@ -17,7 +17,7 @@ configuration from [`examples/7n/`](examples/7n/main.tf).
 terraform {
   required_version = ">= 1.11.0" # write-only arguments
   required_providers {
-    hydra = { source = "nitra/hydra", version = "~> 0.1" }
+    hydra = { source = "nitra/hydra", version = "~> 1.0" }
   }
 }
 
@@ -99,19 +99,19 @@ CI (`.github/workflows/ci.yml`) uses Docker, which is preinstalled on `ubuntu-la
 
 ## Releasing (owner checklist)
 
-This local repository still has `origin` pointing at `svrakitin/terraform-provider-hydra`.
+`origin` is the fork `nitra/terraform-provider-hydra`; `upstream` is `svrakitin/terraform-provider-hydra`.
+Upstream tags `v0.1.0`…`v0.5.4` are inherited from the fork history, so this provider's versions
+start at `v1.0.0` (breaking rewrite on terraform-plugin-framework).
 
-1. Create the fork `nitra/terraform-provider-hydra` on GitHub (fork of svrakitin to keep the
-   network, or a new repo), then:
-   `git remote rename origin upstream && git remote add origin git@github.com:nitra/terraform-provider-hydra.git && git push -u origin main`.
-2. Add repository secrets `GPG_PRIVATE_KEY` and `PASSPHRASE` with the same "nitra" provider
-   signing key as `nitra/terraform-provider-dremio` (the public key is already known to
-   registry.opentofu.org for the `nitra` namespace).
-3. Make sure CI is green, then tag: `git tag v0.1.0 && git push origin v0.1.0`. The `release`
+1. Signing: organization secrets `GPG_PRIVATE_KEY` and `PASSPHRASE` (org `nitra`, selected repos
+   `terraform-provider-dremio` and `terraform-provider-hydra`) hold the "nitra" provider signing key
+   (fingerprint `45C2 CCEF 6BFD 58A1 74CF 493F 6F2A 3A28 C09B 5302`, already registered at
+   registry.opentofu.org for the `nitra` namespace). Source of truth: Infisical, path `/terraform-providers`.
+2. Make sure CI is green, then tag: `git tag -a v1.0.0 -m v1.0.0 && git push origin v1.0.0`. The `release`
    workflow (goreleaser) publishes zips, `SHA256SUMS`, its signature and the
    `_manifest.json` (protocol 6.0).
-4. Open a "Submit new provider" issue in [opentofu/registry](https://github.com/opentofu/registry/issues/new/choose)
-   for `nitra/terraform-provider-hydra`.
+3. First release only: open a "Submit new provider" issue in
+   [opentofu/registry](https://github.com/opentofu/registry/issues/new/choose) for `nitra/terraform-provider-hydra`.
 
 ## License and attribution
 
