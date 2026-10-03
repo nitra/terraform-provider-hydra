@@ -1,0 +1,10 @@
+{
+  "client_id": "apicurio-ui",
+  "client_name": "Apicurio Registry UI",
+  "token_endpoint_auth_method": "none",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "scope": "openid offline_access apicurio:developer",
+  "redirect_uris": ["https://apicurio.example.com/"],
+  "skip_consent": true
+}

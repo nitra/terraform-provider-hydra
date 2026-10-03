@@ -1,0 +1,29 @@
+---
+page_title: "Provider: Hydra (self-hosted Ory Hydra)"
+description: |-
+  Manage OAuth2 clients and jwt-bearer trust relationships of a self-hosted Ory Hydra through its Admin API.
+---
+
+# Hydra Provider
+
+Manages a **self-hosted** [Ory Hydra](https://github.com/ory/hydra) through its Admin API.
+Built and tested against `oryd/hydra:v26.2.0` (the Go client is generated from that exact tag).
+
+Resources:
+
+- `hydra_oauth2_client` - OAuth 2.0 clients, including all 13 per-client token lifespans and a
+  **write-only** client secret (`client_secret_wo`, OpenTofu >= 1.11) that never reaches state.
+- `hydra_trusted_jwt_grant_issuer` - trust relationships for the RFC 7523 JWT Bearer grant.
+
+Data sources:
+
+- `hydra_trusted_jwt_grant_issuers` - list trusts (e.g. to find IDs for `import`).
+
+There is intentionally no JWKS resource: managing Hydra key sets from OpenTofu would put private
+keys into state. Read public JWKS with the `http` data source instead.
+
+## Example usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

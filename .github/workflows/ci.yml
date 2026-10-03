@@ -1,0 +1,64 @@
+# Runs on every push/PR so regressions (broken build, failing tests, docs
+# that drift from the schema, Hydra behaviour changes) are caught before a
+# tag is ever cut.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: go build ./...
+      - name: Lint
+        run: make lint
+      - name: Unit tests
+        run: go test ./... -timeout 60s
+      - name: Check generated docs are up to date
+        run: |
+          make docs
+          git diff --exit-code -- docs/ || (echo "::error::docs/ is stale, run 'make docs' and commit the result" && exit 1)
+
+  acceptance:
+    # Local Ory Hydra v26.2.0 from compose.yaml. Docker is used here because
+    # it is preinstalled on ubuntu-latest runners; locally use podman
+    # (`make hydra-up`), the compose file works with both.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.11.x
+          tofu_wrapper: false
+      - name: Start Hydra
+        run: docker compose up -d --wait
+      - name: Acceptance tests and empirical Hydra checks
+        env:
+          TF_ACC: "1"
+          TF_ACC_PROVIDER_HOST: registry.opentofu.org
+          HYDRA_ADMIN_URL: http://127.0.0.1:4445
+          HYDRA_PUBLIC_URL: http://127.0.0.1:4444
+        run: |
+          export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
+          go test ./... -v -count=1 -timeout 20m
+      - name: Hydra logs
+        if: failure()
+        run: docker compose logs hydra
+      - name: Stop Hydra
+        if: always()
+        run: docker compose down -v

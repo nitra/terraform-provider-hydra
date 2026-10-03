@@ -1,0 +1,42 @@
+---
+page_title: "Forgejo Actions -> Hydra via jwt-bearer"
+subcategory: "Guides"
+description: |-
+  Exchange Forgejo Actions OIDC tokens for Hydra access tokens, manage clients from JSON files and keep client secrets out of state.
+---
+
+# Forgejo Actions -> Hydra via jwt-bearer
+
+This complete example (also in `examples/7n/`) shows:
+
+* OAuth2 clients declared as Hydra client JSON files (`hydra/clients/*.json`) and adopted
+  with `import` blocks;
+* one `hydra_trusted_jwt_grant_issuer` per Forgejo signing key (`kid`) taken from the Forgejo
+  JWKS, guarded by a `postcondition` so an empty/unavailable JWKS never plans the destruction of
+  all trusts;
+* a new confidential client whose secret comes from Infisical (ephemeral resource) through the
+  write-only `client_secret_wo`.
+
+## Behaviour of Hydra v26.2.0 this design relies on
+
+Verified empirically against `oryd/hydra:v26.2.0` (see `internal/empirical` in the repository):
+
+| Question | Result |
+|---|---|
+| Is a trust's `expires_at` enforced when the assertion has a `kid` header? | **No.** Expired trusts keep working with `kid`; without `kid` they are rejected. Revoke by deleting the trust, not by waiting for expiry. |
+| Does deleting one trust affect another trust sharing `(issuer, kid)`? | **Yes.** The JWK is deleted and the FK `ON DELETE CASCADE` silently deletes the other trust too. |
+| Does `PUT /admin/clients/{id}` without `client_secret` keep the secret? | **Yes**, the stored hash is kept. |
+| Are lifespans in the create body applied? | **Yes.** |
+| Can a public client (`token_endpoint_auth_method = "none"`) use jwt-bearer? | **Yes**, with `client_id` in the form body (without any client identification the request is rejected). |
+
+Consequences:
+
+* `expires_at` is a fixed date ~10 years ahead and is **not** rotated (no `time_rotating`).
+* **No `create_before_destroy`** on trusts: Hydra has a unique index on `(issuer, subject, key_id)`
+  (a replacement with the same key fails with 409), and deleting the old trust would delete the
+  shared JWK and cascade-delete the new trust.
+* Use one subject per `(issuer, kid)`; several trusts sharing a key are fragile (see above).
+
+## Configuration
+
+{{ tffile "examples/7n/main.tf" }}

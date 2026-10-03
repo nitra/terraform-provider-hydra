@@ -1,6 +1,8 @@
-build
-vendor/
+/terraform-provider-hydra
+/terraform-provider-hydra_*
+dist/
 *.log
-.terraform
-terraform-provider-hydra*
-terraform.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate*
+*.tfvars

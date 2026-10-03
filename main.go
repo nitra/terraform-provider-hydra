@@ -1,13 +1,31 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"context"
+	"flag"
+	"log"
 
-	"github.com/svrakitin/terraform-provider-hydra/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+
+	"github.com/nitra/terraform-provider-hydra/internal/provider"
 )
 
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+// Set by goreleaser via -ldflags.
+var (
+	version = "dev"
+	commit  = "none"
+)
 
 func main() {
-	plugin.Serve(&plugin.ServeOpts{ProviderFunc: provider.New})
+	var debug bool
+	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.Parse()
+
+	err := providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
+		Address: "registry.opentofu.org/nitra/hydra",
+		Debug:   debug,
+	})
+	if err != nil {
+		log.Fatalf("provider %s (%s): %s", version, commit, err)
+	}
 }

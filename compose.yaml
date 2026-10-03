@@ -1,0 +1,20 @@
+# Local Ory Hydra for acceptance tests. Works with both
+#   podman compose up -d --wait   (primary)
+#   docker compose up -d --wait
+# Data is in-memory (DSN=memory): `down -v` leaves nothing behind.
+services:
+  hydra:
+    image: docker.io/oryd/hydra:v26.2.0
+    command: serve all --dev -c /etc/config/hydra/hydra.yml
+    environment:
+      DSN: memory
+    ports:
+      - "127.0.0.1:${HYDRA_PUBLIC_PORT:-4444}:4444"
+      - "127.0.0.1:${HYDRA_ADMIN_PORT:-4445}:4445"
+    volumes:
+      - ./testdata/hydra:/etc/config/hydra:ro,Z
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:4445/health/ready"]
+      interval: 2s
+      timeout: 2s
+      retries: 30

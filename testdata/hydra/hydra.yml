@@ -1,0 +1,36 @@
+# Local Hydra used by acceptance tests and the empirical checks
+# (internal/provider/*_acc_test.go, internal/empirical). NOT for production:
+# in-memory DSN, dev mode, throw-away system secret.
+serve:
+  cookies:
+    same_site_mode: Lax
+
+urls:
+  self:
+    issuer: http://localhost:4444
+  login: http://localhost:3000/login
+  consent: http://localhost:3000/consent
+
+secrets:
+  system:
+    - acceptance-tests-only-not-a-secret
+
+oidc:
+  subject_identifiers:
+    supported_types:
+      - public
+      - pairwise
+    pairwise:
+      salt: acceptance-tests-only-salt
+
+oauth2:
+  grant:
+    jwt:
+      # Same settings as the planned production setup (Forgejo Actions OIDC
+      # tokens -> jwt-bearer grant): no jti required, assertions up to 70m.
+      jti_optional: true
+      iat_optional: false
+      max_ttl: 70m
+
+log:
+  level: info
