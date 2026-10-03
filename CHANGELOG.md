@@ -1,6 +1,13 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## Unreleased
+
+### Changed
+- Release artifacts are limited to `darwin_amd64`, `darwin_arm64`, `linux_amd64`,
+  `linux_arm64` and `windows_amd64` (was 15 GOOS/GOARCH combinations incl. freebsd and
+  32-bit). Already published versions keep all their archives.
+
+## 1.0.0 (2026-10-03)
 
 First release of the `nitra/hydra` fork of `svrakitin/terraform-provider-hydra`.
 
